@@ -12,6 +12,9 @@ export enum WindDirection {
 export class Constants {
   public static WINDOW_WIDTH = 800
   public static WINDOW_HEIGHT = 600
+  public static GAME_HEIGHT = 3200
+  public static GAME_WIDTH = 3200
+
   private static WIND_DIRECTION_TO_ANGLE = {
     [WindDirection.NORTH]: 270,
     [WindDirection.SOUTH]: 90,

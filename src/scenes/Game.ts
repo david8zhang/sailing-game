@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { Player } from '../core/player'
-import { WindDirection } from '../utils/Constants'
+import { Constants, WindDirection } from '../utils/Constants'
 import { UI } from './UI'
 
 export default class Game extends Phaser.Scene {
@@ -24,20 +24,33 @@ export default class Game extends Phaser.Scene {
 
   create() {
     this.cameras.main.setBackgroundColor('#b0e9fc')
-    // this.cameras.main.setBounds(0, 0, Const)
-
+    this.cameras.main.setBounds(
+      0,
+      0,
+      Constants.GAME_WIDTH,
+      Constants.GAME_HEIGHT
+    )
     this.tilemap = this.make.tilemap({
       key: 'default-map',
     })
-    const tileset = this.tilemap.addTilesetImage('tiles_sheet', 'tiles_sheet')!
+    const tileset = this.tilemap.addTilesetImage(
+      'tiles_sheet',
+      'tiles_sheet',
+      64,
+      64,
+      1,
+      2
+    )!
     this.createLayer('Ocean', tileset)
     this.createLayer('Shore', tileset)
-    this.createLayer('Land', tileset)
+    const landLayer = this.createLayer('Land', tileset)
+    landLayer.setCollisionByProperty({ collides: true })
+    this.matter.world.convertTilemapLayer(landLayer)
 
     const player = new Player(this, {
       position: {
-        x: 100,
-        y: 100,
+        x: Constants.GAME_WIDTH / 2,
+        y: Constants.GAME_HEIGHT / 2,
       },
     })
     this.windUpdateEvent = this.time.addEvent({

@@ -6,13 +6,12 @@ export class Preload extends Scene {
   }
 
   preload() {
-    this.load.image('hull', 'hull.png')
-    this.load.image('sail', 'sail.png')
+    this.load.image('ship', 'ship.png')
     this.load.image('arrow', 'arrow.png')
 
     // Tilemap
     this.load.tilemapTiledJSON('default-map', 'tilemap/default-map.json')
-    this.load.image('tiles_sheet', 'tilemap/tiles_sheet.png')
+    this.load.image('tiles_sheet', 'tilemap/tiles_sheet-extruded.png')
   }
 
   create() {

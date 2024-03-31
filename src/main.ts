@@ -8,7 +8,7 @@ import { Constants } from './utils/Constants'
 const config = {
   width: Constants.WINDOW_WIDTH,
   height: Constants.WINDOW_HEIGHT,
-  type: Phaser.AUTO,
+  type: Phaser.WEBGL,
   // pixelArt: true,
   parent: 'phaser',
   scene: [Preload, Game, UI],
@@ -16,8 +16,8 @@ const config = {
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   physics: {
-    default: 'arcade',
-    arcade: {
+    default: 'matter',
+    matter: {
       gravity: { x: 0, y: 0 },
       // debug: true,
     },
