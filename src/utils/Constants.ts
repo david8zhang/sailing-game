@@ -14,6 +14,11 @@ export class Constants {
   public static WINDOW_HEIGHT = 600
   public static GAME_HEIGHT = 3200
   public static GAME_WIDTH = 3200
+  public static CELL_SIZE = 64
+
+  public static SLOW_SPEED = 1
+  public static MEDIUM_SPEED = 2
+  public static FAST_SPEED = 3
 
   private static WIND_DIRECTION_TO_ANGLE = {
     [WindDirection.NORTH]: 270,

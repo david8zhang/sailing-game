@@ -1,5 +1,6 @@
 import { Scene } from 'phaser'
 import { Constants, WindDirection } from '../utils/Constants'
+import { EventBus, EventTypes } from '../core/EventBus'
 
 export class UI extends Scene {
   private windArrow!: Phaser.GameObjects.Sprite
@@ -33,7 +34,9 @@ export class UI extends Scene {
       this.windArrow.x - this.windArrow.displayWidth / 2 - 30,
       this.windArrow.displayHeight / 2 + 15
     )
-    this.isCreated = true
+    EventBus.instance.publishEvent({
+      type: EventTypes.UI_CREATED,
+    })
   }
 
   updateWindDirection(windDirection: WindDirection) {

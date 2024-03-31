@@ -9,17 +9,17 @@ export interface PlayerConfig {
 }
 
 export class Player {
+  // Ship speeds depending on wind
+  private static MAX_HEALTH = 10
+  private static TURN_SPEED_DEG_PER_FRAME = 5
+  private static PLAYER_COLLIDER_LABEL = 'player-collision-box'
+
   private game: Game
   public sprite: Phaser.Physics.Matter.Sprite
   private keyRight!: Phaser.Input.Keyboard.Key
   private keyLeft!: Phaser.Input.Keyboard.Key
-  private static TURN_SPEED_DEG_PER_FRAME = 5
-  public isAnchored: boolean = false
-
-  // Ship speeds depending on wind
-  private static SLOW_SPEED = 1
-  private static MEDIUM_SPEED = 2
-  private static FAST_SPEED = 3
+  public isAnchored: boolean = true
+  public numHealth: number = Player.MAX_HEALTH
 
   constructor(game: Game, config: PlayerConfig) {
     this.game = game
@@ -28,10 +28,11 @@ export class Player {
       config.position.y,
       'ship'
     )
-    this.sprite.setRectangle(
-      this.sprite.displayWidth,
-      this.sprite.displayHeight * 0.6
-    )
+    this.sprite
+      .setRectangle(this.sprite.displayWidth, this.sprite.displayHeight * 0.6, {
+        label: Player.PLAYER_COLLIDER_LABEL,
+      })
+      .setFixedRotation()
 
     this.keyRight = this.game.input.keyboard!.addKey(
       Phaser.Input.Keyboard.KeyCodes.RIGHT
@@ -51,7 +52,7 @@ export class Player {
     this.game.updateFunctions.push(() => {
       this.update()
     })
-    this.game.cameras.main.startFollow(this.sprite)
+    // this.game.cameras.main.startFollow(this.sprite)
   }
 
   handleTurn() {
@@ -66,14 +67,14 @@ export class Player {
     } else if (rightDown) {
       this.sprite.setAngle(this.sprite.angle + Player.TURN_SPEED_DEG_PER_FRAME)
     }
-    if (this.isAnchored) {
-      this.sprite.setVelocity(0, 0)
-    } else {
-      this.moveShipWithWind()
-    }
   }
 
   moveShipWithWind() {
+    if (this.isAnchored) {
+      this.sprite.setVelocity(0, 0)
+      return
+    }
+
     const currAngle = this.sprite.angle
     const windAngle = Constants.getAngleForWindDirection(
       this.game.windDirection
@@ -81,29 +82,25 @@ export class Player {
     const angleDiff = Math.abs(
       Phaser.Math.Angle.ShortestBetween(currAngle, windAngle)
     )
-    let speed = Player.SLOW_SPEED
+    let speed = Constants.SLOW_SPEED
     if (angleDiff < 45) {
-      speed = Player.FAST_SPEED
+      speed = Constants.FAST_SPEED
     } else if (angleDiff >= 45 && angleDiff < 90) {
-      speed = Player.MEDIUM_SPEED
+      speed = Constants.MEDIUM_SPEED
     } else if (angleDiff >= 90 && angleDiff < 180) {
-      speed = Player.SLOW_SPEED
+      speed = Constants.SLOW_SPEED
     }
     const velocityVector = new Phaser.Math.Vector2(
       Math.cos(Phaser.Math.DegToRad(currAngle)) * speed,
       Math.sin(Phaser.Math.DegToRad(currAngle)) * speed
     )
     this.sprite.setVelocity(velocityVector.x, velocityVector.y)
-
-    // this.sprite.applyForce(velocityVector)
-    // this.game.matter.applyForceFromAngle(
-    //   [this.sprite.body],
-    //   speed,
-    //   this.sprite.angle
-    // )
   }
 
   update() {
     this.handleTurn()
+    this.moveShipWithWind()
   }
+
+  takeDamage() {}
 }
