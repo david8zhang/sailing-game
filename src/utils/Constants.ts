@@ -12,9 +12,11 @@ export enum WindDirection {
 export enum ColliderLabels {
   PLAYER_COLLIDER_LABEL = 'PLAYER_COLLIDER_LABEL',
   PLAYER_CANNONBALL = 'PLAYER_CANNONBALL',
+  ENEMY_CANNONBALL = 'ENEMY_CANNONBALL',
   ENEMY_SENSOR_LABEL = 'ENEMY_SENSOR_LABEL',
   ENEMY_MAIN_COLLIDER = 'ENEMY_MAIN_COLLIDER',
   LAND_TILES = 'LAND_TILES',
+  MAP_BOUNDS = 'MAP_BOUNDS',
 }
 
 export class Constants {
@@ -28,6 +30,7 @@ export class Constants {
   public static MEDIUM_SPEED = 2
   public static FAST_SPEED = 3
   public static CANNONBALL_SPEED_MULTIPLIER = 10
+  public static ENEMY_CANNONBALL_SPEED_MULTIPLIER = 8
 
   private static WIND_DIRECTION_TO_ANGLE = {
     [WindDirection.NORTH]: 270,

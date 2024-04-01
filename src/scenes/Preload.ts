@@ -22,10 +22,15 @@ export class Preload extends Scene {
     // Tilemap
     this.load.tilemapTiledJSON('default-map', 'tilemap/default-map.json')
     this.load.image('tiles_sheet', 'tilemap/tiles_sheet-extruded.png')
+
+    // Audio
+    this.load.audio('title-music', 'music/title-music.mp3')
+    this.load.audio('game-music', 'music/game.mp3')
+    this.load.audio('cannon-fire', 'sfx/cannon-fire.mp3')
+    this.load.audio('explosion', 'sfx/explosion.mp3')
   }
 
   create() {
-    this.scene.start('game')
-    this.scene.start('ui')
+    this.scene.start('start')
   }
 }

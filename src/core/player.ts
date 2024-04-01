@@ -1,5 +1,7 @@
+import { BodyType } from 'matter'
 import Game from '../scenes/Game'
 import { ColliderLabels, Constants } from '../utils/Constants'
+import { UI } from '../scenes/UI'
 
 export interface PlayerConfig {
   position: {
@@ -10,7 +12,7 @@ export interface PlayerConfig {
 
 export class Player {
   // Ship speeds depending on wind
-  private static MAX_HEALTH = 10
+  private static MAX_HEALTH = 5
   private static TURN_SPEED_DEG_PER_FRAME = 5
 
   private game: Game
@@ -18,7 +20,9 @@ export class Player {
   private keyRight!: Phaser.Input.Keyboard.Key
   private keyLeft!: Phaser.Input.Keyboard.Key
   public isAnchored: boolean = true
-  public numHealth: number = Player.MAX_HEALTH
+  public isCooldown: boolean = false
+  public health: number = Player.MAX_HEALTH
+  public score: number = 0
 
   constructor(game: Game, config: PlayerConfig) {
     this.game = game
@@ -49,6 +53,9 @@ export class Player {
         if (e.keyCode === Phaser.Input.Keyboard.KeyCodes.SPACE) {
           this.fireCannon()
         }
+        if (e.keyCode === Phaser.Input.Keyboard.KeyCodes.ESC) {
+          this.game.handleGameOver()
+        }
       }
     )
     this.game.updateFunctions.push(() => {
@@ -56,26 +63,47 @@ export class Player {
     })
   }
 
+  handleCollision(otherBody: BodyType) {
+    if (otherBody.label === ColliderLabels.ENEMY_CANNONBALL) {
+      const cannonballSprite = otherBody.gameObject
+      if (cannonballSprite) {
+        cannonballSprite.destroy()
+        this.game.cameras.main.shake(150, 0.002)
+        this.takeDamage()
+      }
+    }
+  }
+
   fireCannon() {
-    const cannonball = this.game.matter.add.sprite(
-      this.sprite.x,
-      this.sprite.y,
-      'cannonBall'
-    )
-    cannonball.setScale(2)
-    cannonball.setCircle(cannonball.displayWidth / 2, {
-      isSensor: true,
-      friction: 0,
-      frictionAir: 0,
-      frictionStatic: 0,
-      label: ColliderLabels.PLAYER_CANNONBALL,
-    })
-    const currAngle = Phaser.Math.DegToRad(this.sprite.angle)
-    const velocityVector = new Phaser.Math.Vector2(
-      Math.cos(currAngle) * Constants.CANNONBALL_SPEED_MULTIPLIER,
-      Math.sin(currAngle) * Constants.CANNONBALL_SPEED_MULTIPLIER
-    )
-    cannonball.setVelocity(velocityVector.x, velocityVector.y)
+    if (!this.isCooldown) {
+      this.isCooldown = true
+      this.game.sound.play('cannon-fire')
+      const cannonball = this.game.matter.add.sprite(
+        this.sprite.x,
+        this.sprite.y,
+        'cannonBall'
+      )
+      cannonball.setScale(2)
+      cannonball.setCircle(cannonball.displayWidth / 2, {
+        isSensor: true,
+        friction: 0,
+        frictionAir: 0,
+        frictionStatic: 0,
+        label: ColliderLabels.PLAYER_CANNONBALL,
+      })
+      const currAngle = Phaser.Math.DegToRad(this.sprite.angle)
+      const velocityVector = new Phaser.Math.Vector2(
+        Math.cos(currAngle) * Constants.CANNONBALL_SPEED_MULTIPLIER,
+        Math.sin(currAngle) * Constants.CANNONBALL_SPEED_MULTIPLIER
+      )
+      cannonball.setVelocity(velocityVector.x, velocityVector.y)
+      this.game.time.addEvent({
+        delay: 1000,
+        callback: () => {
+          this.isCooldown = false
+        },
+      })
+    }
   }
 
   handleTurn() {
@@ -121,9 +149,24 @@ export class Player {
   }
 
   update() {
-    this.handleTurn()
-    this.moveShipWithWind()
+    if (this.sprite.active) {
+      this.handleTurn()
+      this.moveShipWithWind()
+    }
   }
 
-  takeDamage() {}
+  updateScore() {
+    this.score++
+    UI.instance.updateScoreText(this.score)
+  }
+
+  takeDamage() {
+    this.game.sound.play('explosion')
+
+    this.health = Math.max(this.health - 1, 0)
+    UI.instance.updateHealthText(this.health)
+    if (this.health == 0) {
+      this.game.handleGameOver()
+    }
+  }
 }

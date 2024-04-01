@@ -6,7 +6,6 @@ import { Player } from '../core/Player'
 import { Event, EventBus, EventTypes } from '../core/EventBus'
 import { Enemy } from '../core/Enemy'
 import { BodyType } from 'matter'
-import MatterCollisionPlugin from 'phaser-matter-collision-plugin/dist/phaser-matter-collision-plugin'
 
 export default class Game extends Phaser.Scene {
   public updateFunctions: (() => void)[] = []
@@ -16,7 +15,6 @@ export default class Game extends Phaser.Scene {
   public map!: Map
   public player!: Player
   public enemies: Enemy[] = []
-  public matterCollision!: MatterCollisionPlugin
 
   private static NUM_ENEMIES = 5
   private static _instance: Game
@@ -34,6 +32,8 @@ export default class Game extends Phaser.Scene {
   onEvent(event: Event) {
     if (event.type == EventTypes.UI_CREATED) {
       UI.instance.updateWindDirection(this.windDirection)
+      UI.instance.updateHealthText(this.player.health)
+      UI.instance.updateScoreText(this.player.score)
     }
   }
 
@@ -42,6 +42,7 @@ export default class Game extends Phaser.Scene {
   }
 
   create() {
+    this.sound.play('game-music', { loop: true })
     this.cameras.main.setBackgroundColor('#b0e9fc')
     this.cameras.main.setBounds(
       0,
@@ -87,8 +88,6 @@ export default class Game extends Phaser.Scene {
       },
     })
 
-    this.spawnEnemy()
-
     this.cameras.main.startFollow(this.player.sprite)
     this.matter.world.on(
       'collisionstart',
@@ -129,23 +128,34 @@ export default class Game extends Phaser.Scene {
         ) {
           const otherBody =
             bodyA.label === ColliderLabels.MAP_BOUNDS ? bodyB : bodyA
-          this.setupWallCollisions(otherBody)
+          this.handleWallCollisions(otherBody)
+        }
+
+        if (
+          bodyA.label === ColliderLabels.PLAYER_COLLIDER_LABEL ||
+          bodyB.label === ColliderLabels.PLAYER_COLLIDER_LABEL
+        ) {
+          const otherBody =
+            bodyA.label === ColliderLabels.PLAYER_COLLIDER_LABEL ? bodyB : bodyA
+          this.player.handleCollision(otherBody)
         }
       }
     )
 
-    // this.spawnEnemyEvent = this.time.addEvent({
-    //   repeat: -1,
-    //   delay: 10000,
-    //   startAt: 10000,
-    //   callback: () => {
-    //     this.spawnEnemy()
-    //   },
-    // })
+    this.spawnEnemyEvent = this.time.addEvent({
+      repeat: -1,
+      delay: 10000,
+      startAt: 10000,
+      callback: () => {
+        this.enemies = this.enemies.filter((e) => !e.isDead)
+        this.spawnEnemy()
+      },
+    })
   }
 
-  setupWallCollisions(body: BodyType) {
+  handleWallCollisions(body: BodyType) {
     switch (body.label) {
+      case ColliderLabels.ENEMY_CANNONBALL:
       case ColliderLabels.PLAYER_CANNONBALL: {
         const cannonballSprite = body.gameObject
         if (cannonballSprite) {
@@ -157,7 +167,7 @@ export default class Game extends Phaser.Scene {
   }
 
   spawnEnemy() {
-    for (let i = 0; i < Game.NUM_ENEMIES; i++) {
+    for (let i = 0; i < Game.NUM_ENEMIES - this.enemies.length; i++) {
       const randomTile: Phaser.Tilemaps.Tile = Phaser.Utils.Array.GetRandom(
         this.map.walkableTiles
       )
@@ -175,5 +185,11 @@ export default class Game extends Phaser.Scene {
     this.updateFunctions.forEach((fn) => {
       fn()
     })
+  }
+
+  handleGameOver() {
+    this.scene.start('gameover', { score: this.player.score })
+    this.scene.stop('game')
+    this.scene.stop('ui')
   }
 }

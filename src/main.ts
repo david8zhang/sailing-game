@@ -4,14 +4,15 @@ import OutlinePipelinePlugin from 'phaser3-rex-plugins/plugins/outlinepipeline-p
 import { Preload } from './scenes/Preload'
 import { UI } from './scenes/UI'
 import { Constants } from './utils/Constants'
-import PhaserMatterCollisionPlugin from 'phaser-matter-collision-plugin'
+import { GameOver } from './scenes/GameOver'
+import { Start } from './scenes/Start'
 
 const config = {
   width: Constants.WINDOW_WIDTH,
   height: Constants.WINDOW_HEIGHT,
   type: Phaser.WEBGL,
   parent: 'phaser',
-  scene: [Preload, Game, UI],
+  scene: [Preload, Start, Game, UI, GameOver],
   scale: {
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
@@ -19,7 +20,7 @@ const config = {
     default: 'matter',
     matter: {
       gravity: { x: 0, y: 0 },
-      debug: true,
+      // debug: true,
     },
   },
   plugins: {
@@ -30,17 +31,10 @@ const config = {
         start: true,
       },
     ],
-    scene: [
-      {
-        key: 'matterCollision',
-        plugin: PhaserMatterCollisionPlugin,
-        mapping: 'matterCollision',
-      },
-    ],
   },
   dom: {
     createContainer: true,
   },
 }
 
-const game = new Phaser.Game(config)
+new Phaser.Game(config)

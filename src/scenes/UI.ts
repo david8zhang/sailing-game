@@ -7,6 +7,8 @@ export class UI extends Scene {
   private static _instance: UI
   public isCreated: boolean = false
   public postFxPlugin: any
+  public healthText!: Phaser.GameObjects.Text
+  public scoreText!: Phaser.GameObjects.Text
 
   constructor() {
     super('ui')
@@ -34,9 +36,39 @@ export class UI extends Scene {
       this.windArrow.x - this.windArrow.displayWidth / 2 - 30,
       this.windArrow.displayHeight / 2 + 15
     )
+
+    this.healthText = this.add
+      .text(15, 15, 'HP', {
+        fontSize: '25px',
+        color: 'white',
+      })
+      .setOrigin(0, 0)
+      .setStroke('black', 5)
+
+    this.scoreText = this.add
+      .text(
+        15,
+        this.healthText.y + this.healthText.displayHeight + 5,
+        'Score',
+        {
+          fontSize: '25px',
+          color: 'white',
+        }
+      )
+      .setOrigin(0, 0)
+      .setStroke('black', 5)
+
     EventBus.instance.publishEvent({
       type: EventTypes.UI_CREATED,
     })
+  }
+
+  updateHealthText(health: number) {
+    this.healthText.setText(`HP: ${health}`)
+  }
+
+  updateScoreText(score: number) {
+    this.scoreText.setText(`Score: ${score}`)
   }
 
   updateWindDirection(windDirection: WindDirection) {
