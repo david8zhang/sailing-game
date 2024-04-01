@@ -1,6 +1,6 @@
 import { BodyType } from 'matter'
 import Game from '../scenes/Game'
-import { Constants } from '../utils/Constants'
+import { ColliderLabels, Constants } from '../utils/Constants'
 import { Node } from './map/Pathfinding'
 
 export interface EnemyConfig {
@@ -12,9 +12,6 @@ export interface EnemyConfig {
 
 export class Enemy {
   private static MAX_HEALTH = 3
-  public static ENEMY_SENSOR_LABEL = 'enemy-collision-sensor'
-  public static ENEMY_MAIN_COLLIDER = 'enemy-main-collider'
-
   private game: Game
   public sprite: Phaser.Physics.Matter.Sprite
   private health: number = Enemy.MAX_HEALTH
@@ -36,7 +33,7 @@ export class Enemy {
       this.sprite.displayWidth,
       this.sprite.displayHeight * 0.6,
       {
-        label: Enemy.ENEMY_MAIN_COLLIDER,
+        label: ColliderLabels.ENEMY_MAIN_COLLIDER,
       }
     )
 
@@ -47,7 +44,7 @@ export class Enemy {
       40,
       {
         isSensor: true,
-        label: Enemy.ENEMY_SENSOR_LABEL,
+        label: ColliderLabels.ENEMY_SENSOR_LABEL,
       }
     )
 
@@ -80,12 +77,34 @@ export class Enemy {
     this.moveShipWithWind()
   }
 
-  handleWallCollision() {
-    if (!this.isTurning) {
-      const turnAngles = [45, 90, -45, -90]
-      const randomTurnAngle =
-        this.sprite.angle + Phaser.Utils.Array.GetRandom(turnAngles)
-      this.turnShip(randomTurnAngle)
+  takeDamage() {
+    this.health = Math.max(0, this.health - 1)
+    if (this.health == 2) {
+      this.sprite.setTexture('pirate-halfhealth')
+    }
+    if (this.health === 1) {
+      this.sprite.setTexture('pirate-lowhealth')
+    }
+    if (this.health == 0) {
+      this.sprite.destroy()
+    }
+  }
+
+  handleCollision(bodyB: BodyType) {
+    if (bodyB.label === ColliderLabels.PLAYER_CANNONBALL) {
+      this.game.cameras.main.shake(150, 0.002)
+      const cannonballSprite = bodyB.gameObject
+      if (cannonballSprite) {
+        cannonballSprite.destroy()
+      }
+      this.takeDamage()
+    } else {
+      if (!this.isTurning) {
+        const turnAngles = [45, 90, -45, -90]
+        const randomTurnAngle =
+          this.sprite.angle + Phaser.Utils.Array.GetRandom(turnAngles)
+        this.turnShip(randomTurnAngle)
+      }
     }
   }
 
@@ -105,25 +124,27 @@ export class Enemy {
   }
 
   moveShipWithWind() {
-    const currAngle = this.sprite.angle
-    const windAngle = Constants.getAngleForWindDirection(
-      this.game.windDirection
-    )
-    const angleDiff = Math.abs(
-      Phaser.Math.Angle.ShortestBetween(currAngle, windAngle)
-    )
-    let speed = Constants.SLOW_SPEED
-    if (angleDiff < 45) {
-      speed = Constants.FAST_SPEED
-    } else if (angleDiff >= 45 && angleDiff < 90) {
-      speed = Constants.MEDIUM_SPEED
-    } else if (angleDiff >= 90 && angleDiff < 180) {
-      speed = Constants.SLOW_SPEED
+    if (this.sprite.active) {
+      const currAngle = this.sprite.angle
+      const windAngle = Constants.getAngleForWindDirection(
+        this.game.windDirection
+      )
+      const angleDiff = Math.abs(
+        Phaser.Math.Angle.ShortestBetween(currAngle, windAngle)
+      )
+      let speed = Constants.SLOW_SPEED
+      if (angleDiff < 45) {
+        speed = Constants.FAST_SPEED
+      } else if (angleDiff >= 45 && angleDiff < 90) {
+        speed = Constants.MEDIUM_SPEED
+      } else if (angleDiff >= 90 && angleDiff < 180) {
+        speed = Constants.SLOW_SPEED
+      }
+      const velocityVector = new Phaser.Math.Vector2(
+        Math.cos(Phaser.Math.DegToRad(currAngle)) * speed,
+        Math.sin(Phaser.Math.DegToRad(currAngle)) * speed
+      )
+      this.sprite.setVelocity(velocityVector.x, velocityVector.y)
     }
-    const velocityVector = new Phaser.Math.Vector2(
-      Math.cos(Phaser.Math.DegToRad(currAngle)) * speed,
-      Math.sin(Phaser.Math.DegToRad(currAngle)) * speed
-    )
-    this.sprite.setVelocity(velocityVector.x, velocityVector.y)
   }
 }

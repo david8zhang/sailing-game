@@ -1,5 +1,5 @@
 import Game from '../scenes/Game'
-import { Constants } from '../utils/Constants'
+import { ColliderLabels, Constants } from '../utils/Constants'
 
 export interface PlayerConfig {
   position: {
@@ -12,7 +12,6 @@ export class Player {
   // Ship speeds depending on wind
   private static MAX_HEALTH = 10
   private static TURN_SPEED_DEG_PER_FRAME = 5
-  private static PLAYER_COLLIDER_LABEL = 'player-collision-box'
 
   private game: Game
   public sprite: Phaser.Physics.Matter.Sprite
@@ -30,7 +29,7 @@ export class Player {
     )
     this.sprite
       .setRectangle(this.sprite.displayWidth, this.sprite.displayHeight * 0.6, {
-        label: Player.PLAYER_COLLIDER_LABEL,
+        label: ColliderLabels.PLAYER_COLLIDER_LABEL,
       })
       .setFixedRotation()
 
@@ -44,15 +43,39 @@ export class Player {
     this.game.input.keyboard?.on(
       Phaser.Input.Keyboard.Events.ANY_KEY_UP,
       (e: Phaser.Input.Keyboard.Key) => {
-        if (e.keyCode === Phaser.Input.Keyboard.KeyCodes.SPACE) {
+        if (e.keyCode === Phaser.Input.Keyboard.KeyCodes.A) {
           this.isAnchored = !this.isAnchored
+        }
+        if (e.keyCode === Phaser.Input.Keyboard.KeyCodes.SPACE) {
+          this.fireCannon()
         }
       }
     )
     this.game.updateFunctions.push(() => {
       this.update()
     })
-    // this.game.cameras.main.startFollow(this.sprite)
+  }
+
+  fireCannon() {
+    const cannonball = this.game.matter.add.sprite(
+      this.sprite.x,
+      this.sprite.y,
+      'cannonBall'
+    )
+    cannonball.setScale(2)
+    cannonball.setCircle(cannonball.displayWidth / 2, {
+      isSensor: true,
+      friction: 0,
+      frictionAir: 0,
+      frictionStatic: 0,
+      label: ColliderLabels.PLAYER_CANNONBALL,
+    })
+    const currAngle = Phaser.Math.DegToRad(this.sprite.angle)
+    const velocityVector = new Phaser.Math.Vector2(
+      Math.cos(currAngle) * Constants.CANNONBALL_SPEED_MULTIPLIER,
+      Math.sin(currAngle) * Constants.CANNONBALL_SPEED_MULTIPLIER
+    )
+    cannonball.setVelocity(velocityVector.x, velocityVector.y)
   }
 
   handleTurn() {

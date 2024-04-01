@@ -193,7 +193,9 @@ export class Map {
     this.createLayer('Shore', tileset)
     const landLayer = this.createLayer('Land', tileset)
     landLayer.setCollisionByProperty({ collides: true })
-    this.scene.matter.world.convertTilemapLayer(landLayer)
+    this.scene.matter.world.convertTilemapLayer(landLayer, {
+      label: 'LAND_TILES',
+    })
   }
 
   getLayer(layerName: string) {

@@ -9,6 +9,14 @@ export enum WindDirection {
   SOUTHWEST = 'SOUTHWEST',
 }
 
+export enum ColliderLabels {
+  PLAYER_COLLIDER_LABEL = 'PLAYER_COLLIDER_LABEL',
+  PLAYER_CANNONBALL = 'PLAYER_CANNONBALL',
+  ENEMY_SENSOR_LABEL = 'ENEMY_SENSOR_LABEL',
+  ENEMY_MAIN_COLLIDER = 'ENEMY_MAIN_COLLIDER',
+  LAND_TILES = 'LAND_TILES',
+}
+
 export class Constants {
   public static WINDOW_WIDTH = 800
   public static WINDOW_HEIGHT = 600
@@ -19,6 +27,7 @@ export class Constants {
   public static SLOW_SPEED = 1
   public static MEDIUM_SPEED = 2
   public static FAST_SPEED = 3
+  public static CANNONBALL_SPEED_MULTIPLIER = 10
 
   private static WIND_DIRECTION_TO_ANGLE = {
     [WindDirection.NORTH]: 270,

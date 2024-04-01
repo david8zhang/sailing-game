@@ -1,11 +1,12 @@
 import Phaser from 'phaser'
-import { Constants, WindDirection } from '../utils/Constants'
+import { ColliderLabels, Constants, WindDirection } from '../utils/Constants'
 import { UI } from './UI'
 import { Map } from '../core/map/Map'
 import { Player } from '../core/Player'
 import { Event, EventBus, EventTypes } from '../core/EventBus'
 import { Enemy } from '../core/Enemy'
 import { BodyType } from 'matter'
+import MatterCollisionPlugin from 'phaser-matter-collision-plugin/dist/phaser-matter-collision-plugin'
 
 export default class Game extends Phaser.Scene {
   public updateFunctions: (() => void)[] = []
@@ -15,6 +16,7 @@ export default class Game extends Phaser.Scene {
   public map!: Map
   public player!: Player
   public enemies: Enemy[] = []
+  public matterCollision!: MatterCollisionPlugin
 
   private static NUM_ENEMIES = 5
   private static _instance: Game
@@ -48,12 +50,15 @@ export default class Game extends Phaser.Scene {
       Constants.GAME_HEIGHT
     )
 
-    this.matter.world.setBounds(
+    const worldBounds = this.matter.world.setBounds(
       0,
       0,
       Constants.GAME_WIDTH,
       Constants.GAME_HEIGHT
     )
+    Object.values(worldBounds.walls).forEach((wall: BodyType) => {
+      wall.label = ColliderLabels.MAP_BOUNDS
+    })
 
     this.map = new Map(this, {
       width: Constants.GAME_WIDTH,
@@ -93,26 +98,38 @@ export default class Game extends Phaser.Scene {
         bodyB: BodyType
       ) => {
         if (
-          bodyA.label === Enemy.ENEMY_SENSOR_LABEL ||
-          bodyB.label === Enemy.ENEMY_SENSOR_LABEL ||
-          bodyA.label === Enemy.ENEMY_MAIN_COLLIDER ||
-          bodyB.label === Enemy.ENEMY_MAIN_COLLIDER
+          bodyA.label === ColliderLabels.ENEMY_SENSOR_LABEL ||
+          bodyB.label === ColliderLabels.ENEMY_SENSOR_LABEL ||
+          bodyA.label === ColliderLabels.ENEMY_MAIN_COLLIDER ||
+          bodyB.label === ColliderLabels.ENEMY_MAIN_COLLIDER
         ) {
           let enemyBody
+          let otherBody
           if (
-            bodyA.label === Enemy.ENEMY_SENSOR_LABEL ||
-            bodyA.label === Enemy.ENEMY_MAIN_COLLIDER
+            bodyA.label === ColliderLabels.ENEMY_SENSOR_LABEL ||
+            bodyA.label === ColliderLabels.ENEMY_MAIN_COLLIDER
           ) {
             enemyBody = bodyA
+            otherBody = bodyB
           } else {
             enemyBody = bodyB
+            otherBody = bodyA
           }
           const enemySprite =
             enemyBody.gameObject as Phaser.Physics.Matter.Sprite
           if (enemySprite) {
             const enemyRef = enemySprite.getData('ref') as Enemy
-            enemyRef.handleWallCollision()
+            enemyRef.handleCollision(otherBody)
           }
+        }
+
+        if (
+          bodyA.label === ColliderLabels.MAP_BOUNDS ||
+          bodyB.label === ColliderLabels.MAP_BOUNDS
+        ) {
+          const otherBody =
+            bodyA.label === ColliderLabels.MAP_BOUNDS ? bodyB : bodyA
+          this.setupWallCollisions(otherBody)
         }
       }
     )
@@ -125,6 +142,18 @@ export default class Game extends Phaser.Scene {
     //     this.spawnEnemy()
     //   },
     // })
+  }
+
+  setupWallCollisions(body: BodyType) {
+    switch (body.label) {
+      case ColliderLabels.PLAYER_CANNONBALL: {
+        const cannonballSprite = body.gameObject
+        if (cannonballSprite) {
+          cannonballSprite.destroy()
+        }
+        break
+      }
+    }
   }
 
   spawnEnemy() {
