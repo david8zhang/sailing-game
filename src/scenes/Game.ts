@@ -142,11 +142,13 @@ export default class Game extends Phaser.Scene {
         }
       }
     )
-
-    this.spawnEnemyEvent = this.time.addEvent({
+    this.enemies = []
+    console.log(this.enemies)
+    console.log(this.children)
+    this.spawnEnemy()
+    this.time.addEvent({
       repeat: -1,
       delay: 10000,
-      startAt: 10000,
       callback: () => {
         this.enemies = this.enemies.filter((e) => !e.isDead)
         this.spawnEnemy()
@@ -168,7 +170,8 @@ export default class Game extends Phaser.Scene {
   }
 
   spawnEnemy() {
-    for (let i = 0; i < Game.NUM_ENEMIES - this.enemies.length; i++) {
+    const numEnemiesToSpawn = Game.NUM_ENEMIES - this.enemies.length
+    for (let i = 0; i < numEnemiesToSpawn; i++) {
       const randomTile: Phaser.Tilemaps.Tile = Phaser.Utils.Array.GetRandom(
         this.map.walkableTiles
       )
