@@ -42,7 +42,7 @@ export default class Game extends Phaser.Scene {
   }
 
   create() {
-    this.sound.play('game-music', { loop: true })
+    this.sound.play('game-music', { loop: true, volume: 0.5 })
     this.cameras.main.setBackgroundColor('#b0e9fc')
     this.cameras.main.setBounds(
       0,
@@ -79,6 +79,7 @@ export default class Game extends Phaser.Scene {
       repeat: -1,
       delay: 10000,
       callback: () => {
+        this.sound.play('wind')
         const directions = Object.values(WindDirection)
         const randomDirection = Phaser.Utils.Array.GetRandom(directions)
         this.windDirection = randomDirection

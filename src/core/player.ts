@@ -29,7 +29,7 @@ export class Player {
     this.sprite = this.game.matter.add.sprite(
       config.position.x,
       config.position.y,
-      'ship'
+      'ship-fullhealth'
     )
     this.sprite
       .setRectangle(this.sprite.displayWidth, this.sprite.displayHeight * 0.6, {
@@ -49,6 +49,7 @@ export class Player {
       (e: Phaser.Input.Keyboard.Key) => {
         if (e.keyCode === Phaser.Input.Keyboard.KeyCodes.A) {
           this.isAnchored = !this.isAnchored
+          this.game.sound.play('bells')
         }
         if (e.keyCode === Phaser.Input.Keyboard.KeyCodes.SPACE) {
           this.fireCannon()
@@ -165,6 +166,13 @@ export class Player {
 
     this.health = Math.max(this.health - 1, 0)
     UI.instance.updateHealthText(this.health)
+    if (this.health > 2 && this.health <= 4) {
+      this.sprite.setTexture('ship-halfhealth')
+    }
+    if (this.health <= 2) {
+      this.sprite.setTexture('ship-lowhealth')
+    }
+
     if (this.health == 0) {
       this.game.handleGameOver()
     }

@@ -10,7 +10,9 @@ export class Preload extends Scene {
   }
 
   preload() {
-    this.load.image('ship', 'ship.png')
+    this.load.image('ship-fullhealth', 'player/ship-fullhealth.png')
+    this.load.image('ship-halfhealth', 'player/ship-halfhealth.png')
+    this.load.image('ship-lowhealth', 'player/ship-lowhealth.png')
     this.load.image('arrow', 'arrow.png')
     this.load.image('cannonBall', 'cannonBall.png')
 
@@ -28,6 +30,8 @@ export class Preload extends Scene {
     this.load.audio('game-music', 'music/game.mp3')
     this.load.audio('cannon-fire', 'sfx/cannon-fire.mp3')
     this.load.audio('explosion', 'sfx/explosion.mp3')
+    this.load.audio('wind', 'sfx/wind.mp3')
+    this.load.audio('bells', 'sfx/bells.mp3')
   }
 
   create() {
