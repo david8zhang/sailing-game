@@ -145,11 +145,27 @@ export class Enemy {
   fireCannonball() {
     const currTime = Date.now()
     if (currTime - this.lastFiredTimestamp > 3000) {
+      const cannonSmoke = this.game.add
+        .sprite(
+          this.sprite.x +
+            50 * Math.cos(Phaser.Math.DegToRad(this.sprite.angle)),
+          this.sprite.y +
+            50 * Math.sin(Phaser.Math.DegToRad(this.sprite.angle)),
+          ''
+        )
+        .setAngle(this.sprite.angle)
+        .setScale(2)
+        .setOrigin(0.5, 0.5)
+      cannonSmoke.play('cannon-smoke')
+      cannonSmoke.on(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+        cannonSmoke.destroy()
+      })
+
       this.game.sound.play('cannon-fire')
       this.lastFiredTimestamp = currTime
       const cannonball = this.game.matter.add.sprite(
-        this.sprite.x,
-        this.sprite.y,
+        this.sprite.x + 30 * Math.cos(Phaser.Math.DegToRad(this.sprite.angle)),
+        this.sprite.y + 30 * Math.sin(Phaser.Math.DegToRad(this.sprite.angle)),
         'cannonBall'
       )
       cannonball.setScale(2)
@@ -170,8 +186,17 @@ export class Enemy {
   }
 
   takeDamage() {
+    const explosionSprite = this.game.add
+      .sprite(this.sprite.x, this.sprite.y, '')
+      .setScale(2)
+    explosionSprite.play('explosion-anim')
+    explosionSprite.on(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+      explosionSprite.destroy()
+    })
+
     this.game.sound.play('explosion')
     if (!this.isAggro) {
+      this.lastFiredTimestamp = Date.now() // Hack to prevent CPU from randomly firing a shot after being hit
       this.isAggro = true
     }
     this.health = Math.max(0, this.health - 1)

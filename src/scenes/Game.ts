@@ -6,6 +6,7 @@ import { Player } from '../core/Player'
 import { Event, EventBus, EventTypes } from '../core/EventBus'
 import { Enemy } from '../core/Enemy'
 import { BodyType } from 'matter'
+import { createAnims } from '../core/anims/createAnims'
 
 export default class Game extends Phaser.Scene {
   public updateFunctions: (() => void)[] = []
@@ -16,7 +17,7 @@ export default class Game extends Phaser.Scene {
   public player!: Player
   public enemies: Enemy[] = []
 
-  private static NUM_ENEMIES = 5
+  private static NUM_ENEMIES = 10
   private static _instance: Game
 
   constructor() {
@@ -42,6 +43,7 @@ export default class Game extends Phaser.Scene {
   }
 
   create() {
+    createAnims(this.anims)
     this.sound.play('game-music', { loop: true, volume: 0.5 })
     this.cameras.main.setBackgroundColor('#b0e9fc')
     this.cameras.main.setBounds(
@@ -143,12 +145,10 @@ export default class Game extends Phaser.Scene {
       }
     )
     this.enemies = []
-    console.log(this.enemies)
-    console.log(this.children)
     this.spawnEnemy()
     this.time.addEvent({
       repeat: -1,
-      delay: 10000,
+      delay: 5000,
       callback: () => {
         this.enemies = this.enemies.filter((e) => !e.isDead)
         this.spawnEnemy()
@@ -188,6 +188,19 @@ export default class Game extends Phaser.Scene {
   update() {
     this.updateFunctions.forEach((fn) => {
       fn()
+    })
+    this.children.each((obj) => {
+      if (obj.type === 'cannonball') {
+        const cannonballSprite = obj as Phaser.Physics.Matter.Sprite
+        if (
+          !this.cameras.main.worldView.contains(
+            cannonballSprite.x,
+            cannonballSprite.y
+          )
+        ) {
+          cannonballSprite.destroy()
+        }
+      }
     })
   }
 

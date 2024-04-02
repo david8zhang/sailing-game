@@ -20,6 +20,7 @@ export class Start extends Scene {
         }
       )
       .setOrigin(0.5, 0.5)
+      .setStroke('black', 10)
 
     new Button({
       scene: this,

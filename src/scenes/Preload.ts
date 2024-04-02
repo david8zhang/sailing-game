@@ -32,6 +32,15 @@ export class Preload extends Scene {
     this.load.audio('explosion', 'sfx/explosion.mp3')
     this.load.audio('wind', 'sfx/wind.mp3')
     this.load.audio('bells', 'sfx/bells.mp3')
+
+    // Animations
+    this.load.atlas('explosion-anim', 'vfx/explosion.png', 'vfx/explosion.json')
+    this.load.atlas(
+      'cannon-smoke',
+      'vfx/cannon-smoke.png',
+      'vfx/cannon-smoke.json'
+    )
+    this.load.image('pirate-ship', 'pirate-ship.jpeg')
   }
 
   create() {
